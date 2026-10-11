@@ -134,6 +134,9 @@ class QNewton(Optimization):
     Parent class of all Quasi-Newton implementations. Uses line search with Wolfe conditions
     for the line search step, and only expects that subclasses implement the inverse Hessian
     approximation function.
+
+    TODO For now using exact line search as the arm_wolfe currently fails if the step direction
+    isn't in a descent direction.
     """
 
     def line_search(self, x, s):
@@ -145,6 +148,9 @@ class QNewton(Optimization):
 class GoodBroyden(QNewton):
     """
     Simple Broyden rank-1 update of G and applying Sherman-Morisson's formula ("good Broyden")
+
+    Source: A Class of Methods for Solving Nonlinear Simultaneous Equations
+            By C. G. Broyden
     """
 
     def __init__(self, *args, **kwargs):
@@ -184,6 +190,9 @@ class GoodBroyden(QNewton):
 class BadBroyden(QNewton):
     """
     Simple Broyden rank-1 update of H = G_inv ("bad Broyden")
+
+    Source: A Class of Methods for Solving Nonlinear Simultaneous Equations
+        By C. G. Broyden
     """
     
     def __init__(self, *args, **kwargs):
@@ -222,8 +231,11 @@ class BadBroyden(QNewton):
 
 class SymmetricBroyden(QNewton):
     """
-    Symmetric Broyden update, performs Good-Broyden with a symmetrizing
+    Symmetric Broyden rank-2 update, performs Good-Broyden with a symmetrizing
     step.
+
+    Source: A Class of Methods for Solving Nonlinear Simultaneous Equations
+            By C. G. Broyden
     """
     
     def __init__(self, *args, **kwargs):
