@@ -1,18 +1,21 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Draw a contour plot of the function. Expects two inputs to one output.
 def draw_contour(
         fn, steps=[],
         print_labels = False,
         n_levels = 7, ls_off = 100, le_off = 10,
     ):
+    """
+    Draw a contour plot of the function. Expects two inputs to one output.
+    """
+    
     # Compute dimensions of the contour graph from the steps, with a suitable fallback
     x_range = [-2, 2]
     y_range = [-1.5, 4]
 
     if len(steps) > 0:
-        padding = 2
+        padding = 4
         nd_steps = np.array(steps)
         x, y = nd_steps[:,0], nd_steps[:,1]
         x_range = [np.min(x) - padding, np.max(x) + padding]
@@ -59,6 +62,20 @@ def draw_contour(
 
     plt.legend(loc="upper right")
     plt.tight_layout()
+    plt.show()
+
+def draw_error_grid(errors):
+    """
+    (Stolen func, not from me :p)
+    Draw the errors from approximating the Hessian to a grid plot.
+    """
+    
+    plt.figure(figsize=(8, 5))
+    plt.semilogy(errors, "bo-", linewidth=2, markersize=6)
+    plt.title("Hessian (inv) Approximation Quality")
+    plt.xlabel("Iteration $k$")
+    plt.ylabel("Frobenius Norm Error")
+    plt.grid(True, which="both", linestyle="--", alpha=0.6)
     plt.show()
 
 def rosenbrock_fn(x):

@@ -1,5 +1,6 @@
 import numpy as np
 import scipy.linalg as linalg
+import scipy.differentiate as differentiate
 from line_search import exact_line_search, arm_wolf_search
 from hessian_approx import finite_diffs
 
@@ -60,6 +61,7 @@ class Optimization():
 
         x = np.array(x0)
         x_steps = [x]
+        H_errors = []
         
         for _ in range(self.max_steps):
             g = self.obj_grad(x)
@@ -73,19 +75,27 @@ class Optimization():
 
             is_inv = False
             G, is_inv = self.approx_hessian(self.obj_grad, x)
+
+            # Evaluate Hessian (or inverse) approx
+            # G_true = differentiate.hessian(self.obj_func, x).ddf # TODO Get scipy hess to work with chebyquad
+            G_true = finite_diffs(self.obj_grad, x, dx=1e-7)
+            if is_inv:
+                G_true = np.linalg.inv(G_true)
+            
             # TODO If the Hessian is not symmetric positive definite, this seems to fail...
             if not is_inv:
                 # Solve symmetric linear system
-                s = linalg.solve(G, -g, assume_a="symmetric")
+                s = linalg.solve(G, -g)
             else:
                 # Directly compute step direction
                 s = -G @ g
             alpha = self.line_search(x, s)
 
+            H_errors.append(np.linalg.norm(G - G_true, "fro"))
             x = x + alpha * s
 
-        # Return the solution, the and the steps taken
-        return x, [*x_steps, x]
+        # Return the solution, the and the steps taken, and Hessian errors
+        return x, [*x_steps, x], H_errors
 
 ### Classical Newton Implementation
 
@@ -98,7 +108,7 @@ class ClassicalNewton(Optimization):
     """
 
     def __init__(self, use_exact_ls=False, *args, **kwargs):
-        super(ClassicalNewton, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.use_exact_ls=use_exact_ls
     
     def line_search(self, x, s):
@@ -129,7 +139,8 @@ class QNewton(Optimization):
     def line_search(self, x, s):
         """Exact line search."""
         
-        return arm_wolf_search(self.obj_func, self.obj_grad, x, s)
+        return exact_line_search(self.obj_func, self.obj_grad, x, s)
+        # return arm_wolf_search(self.obj_func, self.obj_grad, x, s)
 
 class GoodBroyden(QNewton):
     """
@@ -137,7 +148,7 @@ class GoodBroyden(QNewton):
     """
 
     def __init__(self, *args, **kwargs):
-        super(QNewton, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         # x from the previous iteration
         self.xp = None
         # f'(x) from the previous iteration
@@ -157,7 +168,10 @@ class GoodBroyden(QNewton):
             y = g(x) - self.gp
             H = self.H_inv
 
-            self.H_inv = H + ((v-H@y)/np.dot(v,H@y))@(v@H)
+            denom = np.dot(v, H @ y)
+            if abs(denom) > 1e-12:
+                # Rank 1 update
+                self.H_inv = H + np.outer(v-H@y,v@H) / denom
         else:
             self.H_inv = np.identity(x.shape[0])
 
@@ -165,8 +179,6 @@ class GoodBroyden(QNewton):
         self.xp = x
         self.gp = g(x)
 
-        # Symmetrize output
-        self.H_inv = (self.H_inv + self.H_inv.transpose())/2
         return self.H_inv, True
     
 class BadBroyden(QNewton):
@@ -175,7 +187,7 @@ class BadBroyden(QNewton):
     """
     
     def __init__(self, *args, **kwargs):
-        super(QNewton, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         # x from the previous iteration
         self.xp = None
         # f'(x) from the previous iteration
@@ -195,7 +207,10 @@ class BadBroyden(QNewton):
             y = g(x) - self.gp
             H = self.H_inv
 
-            self.H_inv = H + ((v-H@y)/np.dot(y,y))@y
+            denom = np.dot(y, y)
+            if abs(denom) > 1e-12:
+                # Rank 1 update
+                self.H_inv = H + np.outer(v-H@y,y) / denom
         else:
             self.H_inv = np.identity(x.shape[0])
 
@@ -203,8 +218,6 @@ class BadBroyden(QNewton):
         self.xp = x
         self.gp = g(x)
 
-        # Symmetrize output
-        self.H_inv = (self.H_inv + self.H_inv.transpose())/2
         return self.H_inv, True
 
 class SymmetricBroyden(QNewton):
@@ -214,7 +227,7 @@ class SymmetricBroyden(QNewton):
     """
     
     def __init__(self, *args, **kwargs):
-        super(QNewton, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         # x from the previous iteration
         self.xp = None
         # f'(x) from the previous iteration
@@ -234,8 +247,13 @@ class SymmetricBroyden(QNewton):
             y = g(x) - self.gp
             H = self.H_inv
 
-            self.H_inv = H + (np.outer(y-H@v,v)+np.outer(v,y-H@v))/np.dot(v,v) \
-                           - (np.dot(y-H@v,v)/(np.dot(v,v)**2))*np.outer(v,v)
+            denom1 = np.dot(y,H@y)
+            denom2 = np.dot(v,y)
+
+            if abs(denom1) > 1e-12:
+                self.H_inv -= np.outer(H@y,y@H)/denom1
+            if abs(denom2) > 1e-12:
+                self.H_inv -= np.outer(v,v)/denom2
         else:
             self.H_inv = np.identity(x.shape[0])
 
@@ -251,7 +269,7 @@ class DFP(QNewton):
     """
 
     def __init__(self, *args, **kwargs):
-        super(QNewton, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         # x from the previous iteration
         self.xp = None
         # f'(x) from the previous iteration
@@ -287,7 +305,7 @@ class BFGS(QNewton):
     """
     
     def __init__(self, *args, **kwargs):
-        super(QNewton, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         # x from the previous iteration
         self.xp = None
         # f'(x) from the previous iteration
