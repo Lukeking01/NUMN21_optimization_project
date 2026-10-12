@@ -34,7 +34,12 @@ class Problem:
 
 class Optimization():
     """
-    Optimization problem class.
+    Optimization problem class, implements a "reset" which is run internally on each "solve"
+    and implements the main solving steps for approaching a minimum of the objective function.
+
+    Subclasses that implement the chosen optimization approach should override the line_search
+    and approx_hessian functions, and the approx_hessian function should specify if it is returning
+    an approximation of the Hessian itself, or its inverse.
     """
 
     def __init__(self, problem):
@@ -95,7 +100,7 @@ class Optimization():
         self.reset()
 
         x = np.array(x0)
-        self.step_history = [x]
+        self.step_history = []
         
         for _ in range(self.max_steps):
             g = self.problem.gradient_at(x)
@@ -202,6 +207,7 @@ class GoodBroyden(QNewton):
         self.H_inv = None
     
     def reset(self):
+        super().reset()
         self.xp = None
         self.gp = None
         self.H_inv = None
@@ -244,6 +250,7 @@ class BadBroyden(QNewton):
         self.H_inv = None
     
     def reset(self):
+        super().reset()
         self.xp = None
         self.gp = None
         self.H_inv = None
@@ -287,6 +294,7 @@ class SymmetricBroyden(QNewton):
         self.H_inv = None
     
     def reset(self):
+        super().reset()
         self.xp = None
         self.gp = None
         self.H_inv = None
@@ -329,6 +337,7 @@ class DFP(QNewton):
         self.H_inv = None
 
     def reset(self):
+        super().reset()
         self.xp = None
         self.gp = None
         self.H_inv = None
@@ -365,6 +374,7 @@ class BFGS(QNewton):
         self.H_inv = None
 
     def reset(self):
+        super().reset()
         self.xp = None
         self.gp = None
         self.H_inv = None
