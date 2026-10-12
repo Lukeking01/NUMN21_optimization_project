@@ -37,29 +37,29 @@ roots = np.array([
 
 def run_one_Newton(xy):
     """Run NewtonMethod and return which root it found + iterations"""
-    solver = ClassicalNewton(problem, max_steps=100)
-    sol = solver.minimize(np.asarray(xy, dtype=float))
+    solver = ClassicalNewton(None,f,grad)
+    sol = solver.solve(np.asarray(xy, dtype=float))
     
     # which root
     dists = np.linalg.norm(roots - sol, axis=1)
     k = np.argmin(dists)
     if dists[k] < 0.1:
-        return k, len(solver.history)-1
+        return k, len(solver.step_history)-1
     else:
-        return 3, len(solver.history)-1   # did not converge
+        return 3, len(solver.step_history)-1   # did not converge
     
 def run_one_BFGS(xy):
     """Run BFGS and return which root it found + iterations"""
-    solver = BFGS(problem, max_steps=100)
-    sol = solver.minimize(np.asarray(xy, dtype=float))
+    solver = BFGS(f, grad)
+    sol = solver.solve(np.asarray(xy, dtype=float))
     
     # which root
     dists = np.linalg.norm(roots - sol, axis=1)
     k = np.argmin(dists)
     if dists[k] < 0.1:
-        return k, len(solver.history)-1
+        return k, len(solver.step_history)-1
     else:
-        return 3, len(solver.history)-1   # did not converge
+        return 3, len(solver.step_history)-1   # did not converge
 
 # ------------------------------------------------------------------
 # parallel computation
@@ -104,4 +104,4 @@ def fractal(resolution, run_one, path="imgs/newton_fractal.png"):
     plt.show()
     
 if __name__ == "__main__":
-    fractal(8, run_one_Newton)
+    fractal(8, run_one_BFGS)
