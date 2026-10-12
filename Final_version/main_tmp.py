@@ -46,6 +46,9 @@ def run_chebyquad(method, size=8):
 
 
 if __name__ == "__main__":
+    
+    rosenbrockproblem = Problem(objective=rosenbrock_fn, gradient=rosenbrock_grad)
+    rosenbrockproblem2 = Problem(objective=rosenbrock_fn, gradient=rosenbrock_grad)
     ### Rosenbrock ###
     
     # method = ClassicalNewton(obj_func=rosenbrock_fn, obj_grad=rosenbrock_grad, use_exact_ls=True)
@@ -55,7 +58,7 @@ if __name__ == "__main__":
     # method = SymmetricBroyden(obj_func=rosenbrock_fn, obj_grad=rosenbrock_grad)
     # method = BadBroyden(obj_func=rosenbrock_fn, obj_grad=rosenbrock_grad)
     # method = DFP(obj_func=rosenbrock_fn, obj_grad=rosenbrock_grad)
-    method = BFGS(obj_func=rosenbrock_fn, obj_grad=rosenbrock_grad)
+    rosenbrockmethod = BFGS(rosenbrockproblem)
     
     x_vals = np.random.random((8, 2)) * 8 - 6
     # x_vals = FAILED_POINTS
@@ -63,6 +66,7 @@ if __name__ == "__main__":
     # run_rosenbrock(method, x_vals)
     
     ### CHEBYQUAD ###
+    chebyquadproblem = Problem(objective=chebyquad, gradient=gradchebyquad)
     
     # method = ClassicalNewton(obj_func=chebyquad, obj_grad=gradchebyquad, use_exact_ls=True)
     # method = ClassicalNewton(obj_func=chebyquad, obj_grad=gradchebyquad, use_exact_ls=False)
@@ -71,7 +75,7 @@ if __name__ == "__main__":
     # method = SymmetricBroyden(obj_func=chebyquad, obj_grad=gradchebyquad)
     # method = BadBroyden(obj_func=chebyquad, obj_grad=gradchebyquad)
     # method = DFP(obj_func=chebyquad, obj_grad=gradchebyquad)
-    method = BFGS(obj_func=chebyquad, obj_grad=gradchebyquad)
+    chebyquadmethod = BFGS(chebyquadproblem)
 
     # run_chebyquad(method, 4)
     # run_chebyquad(method, 8)
@@ -79,18 +83,24 @@ if __name__ == "__main__":
     # run_chebyquad(method, 14)
 
     ### Rosenbrock ###
-    method = BFGS(obj_func=rosenbrock_fn, obj_grad=rosenbrock_grad)
+    method = BFGS(rosenbrockproblem)
+    method2 = BFGS(rosenbrockproblem2)
+    
 
     num_cols = 4
-    x = np.random.random((8,2))
+    x = np.random.random((4,2))
     x[:,0] = x[:,0] * 3.5 - 1.5
     x[:,1] = x[:,1] * 4 - 0.5
     fig, ax = plt.subplots(2, 4)
     for i, x_i in enumerate(x):
         method.solve(x_i)
+        method2.solve(x_i)
 
         row = i // num_cols
         col = i % num_cols
         plot_rosenbrock_path(method, ax[row,col])
+        plot_rosenbrock_path(method2, ax[row+1,col])
 
     plt.show()
+    
+    
