@@ -52,8 +52,6 @@ class Optimization():
         # Eval history
         self.step_history = []
         self.error_history = []
-        # TODO Temp fields
-        self.phi_prime = []
 
     def reset(self):
         """
@@ -61,7 +59,6 @@ class Optimization():
         """
         self.step_history = []
         self.error_history = []
-        self.phi_prime = []
 
     def line_search(self, x, s):
         """
@@ -132,7 +129,6 @@ class Optimization():
                 # Directly compute step direction
                 s = -G @ g
             alpha = self.line_search(x, s)
-            self.phi_prime.append(np.dot(self.problem.gradient_at(x), s))
 
             self.error_history.append(np.linalg.norm(G - G_true, "fro"))
             x = x + alpha * s
@@ -171,7 +167,7 @@ class ClassicalNewton(Optimization):
     def approx_hessian(self, g, x):
         """Uses finite differences to estimate the hessian from the gradient."""
 
-        return finite_diffs(g, x), False
+        return finite_diffs(g, x, dx=1e-5), False
 
 ### Quasi-Newton Implementations
 
