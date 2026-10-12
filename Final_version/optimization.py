@@ -4,15 +4,27 @@ import scipy.differentiate as differentiate
 from line_search import exact_line_search, arm_wolf_search, line_search_alt_orsolya
 from hessian_approx import finite_diffs
 
+class Problem:
+    def __init__(self, objective, gradient=None):
+        self.objective = objective
+        self.gradient = gradient
+
+    def evaluate(self, x):
+        return self.objective(x)
+
+    def gradient_at(self, x):
+        if self.gradient is None:
+            raise ValueError("No gradient was provided.")
+        return self.gradient(x)
+
 class Optimization():
     """
     Optimization problem class.
     """
 
-    def __init__(self, obj_func, obj_grad):
+    def __init__(self, problem):
         # Objective function and gradient
-        self.obj_func = obj_func
-        self.obj_grad = obj_grad
+        self.problem = problem
         # Stopping criteria # TODO Move to config
         self.grad_tol = 1e-6
         self.step_tol = 1e-6
@@ -86,7 +98,7 @@ class Optimization():
         self.step_history = [x]
         
         for _ in range(self.max_steps):
-            g = self.gradient(x)
+            g = self.problem.gradient_at(x)
 
             # Check exit criteria
             if np.linalg.norm(g) < self.grad_tol:
@@ -96,11 +108,11 @@ class Optimization():
             self.step_history.append(x)
 
             is_inv = False
-            G, is_inv = self.approx_hessian(self.gradient, x)
+            G, is_inv = self.approx_hessian(self.problem.gradient, x)
 
             # Evaluate Hessian (or inverse) approx
-            # G_true = differentiate.hessian(self.obj_func, x).ddf # TODO Get scipy hess to work with chebyquad
-            G_true = finite_diffs(self.gradient, x, dx=1e-7)
+            # G_true = differentiate.hessian(self.problem.objective, x).ddf # TODO Get scipy hess to work with chebyquad
+            G_true = finite_diffs(self.problem.gradient, x, dx=1e-7)
             if is_inv:
                 G_true = np.linalg.inv(G_true)
             
@@ -140,11 +152,13 @@ class ClassicalNewton(Optimization):
         """
         
         if self.use_exact_ls:
-            return exact_line_search(self.obj_func, self.obj_grad, x, s)
+            return exact_line_search(self.problem.objective, self.problem.gradient, x, s)
         elif self.use_exact_ls == None:
             return 1
         else:
-            return line_search_alt_orsolya(self.obj_func, self.obj_grad, x, s)
+
+            return line_search_alt_orsolya(self.problem.objective, self.problem.gradient, x, s)
+
 
     def approx_hessian(self, g, x):
         """Uses finite differences to estimate the hessian from the gradient."""
@@ -166,7 +180,9 @@ class QNewton(Optimization):
     def line_search(self, x, s):
         """Exact line search."""
         
-        return line_search_alt_orsolya(self.obj_func, self.obj_grad, x, s)
+
+        return line_search_alt_orsolya(self.problem.objective, self.problem.gradient, x, s)
+
 
 class GoodBroyden(QNewton):
     """
@@ -378,7 +394,9 @@ class BFGS(QNewton):
 
 class InexactLineSearch(Optimization):
     def line_search(self, x, s):
-        return line_search_alt_orsolya(self.obj_func, self.obj_grad, x=x, s=s)
+
+        return line_search_alt_orsolya(self.problem.objective, self.problem.gradient, x=x, s=s)
+
     
     def approx_hessian(self, g, x):
         n = x.shape[0]
