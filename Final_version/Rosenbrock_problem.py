@@ -35,7 +35,7 @@ def plot_rosenbrock_path(method, ax, xlim=(-1.5, 2.0), ylim=(-0.5, 3.5)):
 
     ax.contour(X,Y,Z,levels=levels)
 
-    history = np.array(method.history)
+    history = np.array(method.step_history)
 
     ax.plot(history[:, 0],history[:, 1],"o-",label="optimization path", color="green")
     ax.plot(history[0,0], history[0,1],"^",markersize=12,label="initial guess", color="blue")

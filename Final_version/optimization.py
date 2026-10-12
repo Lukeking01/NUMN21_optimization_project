@@ -48,6 +48,21 @@ class Optimization():
         """
         raise NotImplementedError("Subclass must provide an implementation!")
 
+    def approx_grad(self, x, h=1e-8):
+            x = np.asarray(x, dtype=float)
+            n = len(x)
+            grad = np.zeros(n)
+            for i in range(n):
+                e = np.zeros(n)
+                e[i] = 1.0
+                grad[i] = (self.obj_func(x+h*e)-self.obj_func(x-h*e))/(2.0*h)
+            return grad
+
+    def gradient(self, x):
+        if self.obj_grad is not None:
+            return np.asarray(self.obj_grad(x), dtype=float)
+        return self.approx_grad(x)
+
     def approx_hessian(self, g, x):
         """
         Abstract method - to be overriden by subclass.
@@ -81,7 +96,6 @@ class Optimization():
 
         x = np.array(x0)
         self.step_history = [x]
-        H_errors = []
         
         for _ in range(self.max_steps):
             g = self.problem.gradient_at(x)
@@ -111,7 +125,7 @@ class Optimization():
                 s = -G @ g
             alpha = self.line_search(x, s)
 
-            H_errors.append(np.linalg.norm(G - G_true, "fro"))
+            self.error_history.append(np.linalg.norm(G - G_true, "fro"))
             x = x + alpha * s
 
         # Return the solution, the and the steps taken, and Hessian errors
