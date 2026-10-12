@@ -1,7 +1,7 @@
 import numpy as np
 import scipy.linalg as linalg
 import scipy.differentiate as differentiate
-from line_search import exact_line_search, arm_wolf_search
+from line_search import exact_line_search, arm_wolf_search, line_search_alt_orsolya
 from hessian_approx import finite_diffs
 
 class Optimization():
@@ -144,7 +144,7 @@ class ClassicalNewton(Optimization):
         elif self.use_exact_ls == None:
             return 1
         else:
-            return arm_wolf_search(self.obj_func, self.gradient, x, s)
+            return line_search_alt_orsolya(self.obj_func, self.obj_grad, x, s)
 
     def approx_hessian(self, g, x):
         """Uses finite differences to estimate the hessian from the gradient."""
@@ -166,8 +166,7 @@ class QNewton(Optimization):
     def line_search(self, x, s):
         """Exact line search."""
         
-        return exact_line_search(self.obj_func, self.gradient, x, s)
-        # return arm_wolf_search(self.obj_func, self.gradient, x, s)
+        return line_search_alt_orsolya(self.obj_func, self.obj_grad, x, s)
 
 class GoodBroyden(QNewton):
     """
@@ -379,7 +378,7 @@ class BFGS(QNewton):
 
 class InexactLineSearch(Optimization):
     def line_search(self, x, s):
-        return arm_wolf_search(self.obj_func, self.gradient, x=x, s=s)
+        return line_search_alt_orsolya(self.obj_func, self.obj_grad, x=x, s=s)
     
     def approx_hessian(self, g, x):
         n = x.shape[0]
