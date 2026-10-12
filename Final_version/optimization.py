@@ -127,6 +127,8 @@ class ClassicalNewton(Optimization):
         
         if self.use_exact_ls:
             return exact_line_search(self.obj_func, self.obj_grad, x, s)
+        elif self.use_exact_ls == None:
+            return 1
         else:
             return arm_wolf_search(self.obj_func, self.obj_grad, x, s)
 
