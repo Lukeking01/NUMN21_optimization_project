@@ -1,7 +1,7 @@
 import numpy as np
 import scipy.linalg as linalg
 import scipy.differentiate as differentiate
-from line_search import exact_line_search, arm_wolf_search, line_search_alt_orsolya
+from line_search import exact_line_search, arm_wolf_search
 from hessian_approx import finite_diffs
 
 class Problem:
@@ -176,16 +176,12 @@ class QNewton(Optimization):
     Parent class of all Quasi-Newton implementations. Uses line search with Wolfe conditions
     for the line search step, and only expects that subclasses implement the inverse Hessian
     approximation function.
-
-    TODO For now using exact line search as the arm_wolfe currently fails if the step direction
-    isn't in a descent direction.
     """
 
     def line_search(self, x, s):
-        """Exact line search."""
+        """Line search with Armijo-Wolfe conditions."""
         
-
-        return line_search_alt_orsolya(self.problem.objective, self.problem.gradient, x, s)
+        return arm_wolf_search(self.problem.objective, self.problem.gradient, x, s)
 
 
 class GoodBroyden(QNewton):
@@ -403,10 +399,8 @@ class BFGS(QNewton):
 
 class InexactLineSearch(Optimization):
     def line_search(self, x, s):
+        return arm_wolf_search(self.problem.objective, self.problem.gradient, x=x, s=s)
 
-        return line_search_alt_orsolya(self.problem.objective, self.problem.gradient, x=x, s=s)
-
-    
     def approx_hessian(self, g, x):
         n = x.shape[0]
         return np.identity(n), True

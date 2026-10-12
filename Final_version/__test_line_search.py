@@ -30,7 +30,7 @@ method = ClassicalNewton(problem=rose_pr, use_exact_ls=False)
 # method = GoodBroyden(problem=rose_pr) # TODO Not working
 # method = SymmetricBroyden(problem=rose_pr) # TODO Not working
 # method = BadBroyden(problem=rose_pr) # TODO Not working
-# method = DFP(problem=rose_pr) # TODO Not working
+# method = DFP(problem=rose_pr)
 # method = BFGS(problem=rose_pr)
 
 FAILED_POINTS = np.array([
@@ -41,4 +41,4 @@ FAILED_POINTS = np.array([
 
 # points = FAILED_POINTS
 points = np.random.random((40, 2)) * 4 - 1
-run_rosenbrock(method, points, with_plotting=False)
+run_rosenbrock(method, points, with_plotting=True)
