@@ -37,7 +37,7 @@ roots = np.array([
 
 def run_one_Newton(xy):
     """Run NewtonMethod and return which root it found + iterations"""
-    solver = ClassicalNewton(problem, max_iterations=100, tolerance=1e-12)
+    solver = ClassicalNewton(problem, max_steps=100)
     sol = solver.minimize(np.asarray(xy, dtype=float))
     
     # which root
@@ -50,7 +50,7 @@ def run_one_Newton(xy):
     
 def run_one_BFGS(xy):
     """Run BFGS and return which root it found + iterations"""
-    solver = BFGS(problem, max_iterations=100, tolerance=1e-12)
+    solver = BFGS(problem, max_steps=100)
     sol = solver.minimize(np.asarray(xy, dtype=float))
     
     # which root
@@ -104,4 +104,4 @@ def fractal(resolution, run_one, path="imgs/newton_fractal.png"):
     plt.show()
     
 if __name__ == "__main__":
-    fractal(80, run_one_BFGS)
+    fractal(8, run_one_Newton)

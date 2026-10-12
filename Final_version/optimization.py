@@ -9,18 +9,24 @@ class Optimization():
     Optimization problem class.
     """
 
-    def __init__(self, obj_func, obj_grad=None):
+    def __init__(self, obj_func, obj_grad):
+        # Objective function and gradient
         self.obj_func = obj_func
         self.obj_grad = obj_grad
+        # Stopping criteria # TODO Move to config
         self.grad_tol = 1e-6
         self.step_tol = 1e-6
         self.max_steps = 10_000
+        # Eval history
+        self.step_history = []
+        self.error_history = []
 
     def reset(self):
         """
         To be overriden in subclasses that require a reset between solving problems.
         """
-        pass
+        self.step_history = []
+        self.error_history = []
 
     def line_search(self, x, s):
         """
@@ -74,8 +80,10 @@ class Optimization():
             4) Check stopping conditions (Residual/Cauchy)
         """
 
+        self.reset()
+
         x = np.array(x0)
-        x_steps = [x]
+        self.step_history = [x]
         H_errors = []
         
         for _ in range(self.max_steps):
@@ -84,9 +92,9 @@ class Optimization():
             # Check exit criteria
             if np.linalg.norm(g) < self.grad_tol:
                break
-            elif len(x_steps) > 1 and np.linalg.norm(x - x_steps[-1]) < self.step_tol:
+            elif len(self.step_history) > 1 and np.linalg.norm(x - self.step_history[-1]) < self.step_tol:
                 break
-            x_steps.append(x)
+            self.step_history.append(x)
 
             is_inv = False
             G, is_inv = self.approx_hessian(self.gradient, x)
@@ -110,7 +118,7 @@ class Optimization():
             x = x + alpha * s
 
         # Return the solution, the and the steps taken, and Hessian errors
-        return x, [*x_steps, x], H_errors
+        return x
 
 ### Classical Newton Implementation
 
