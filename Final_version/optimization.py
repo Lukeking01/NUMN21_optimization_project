@@ -84,7 +84,6 @@ class Optimization():
 
         x = np.array(x0)
         self.step_history = [x]
-        H_errors = []
         
         for _ in range(self.max_steps):
             g = self.gradient(x)
@@ -114,7 +113,7 @@ class Optimization():
                 s = -G @ g
             alpha = self.line_search(x, s)
 
-            H_errors.append(np.linalg.norm(G - G_true, "fro"))
+            self.error_history.append(np.linalg.norm(G - G_true, "fro"))
             x = x + alpha * s
 
         # Return the solution, the and the steps taken, and Hessian errors
