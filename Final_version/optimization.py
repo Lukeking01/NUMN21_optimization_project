@@ -52,6 +52,8 @@ class Optimization():
         # Eval history
         self.step_history = []
         self.error_history = []
+        # TODO Temp fields
+        self.phi_prime = []
 
     def reset(self):
         """
@@ -59,6 +61,7 @@ class Optimization():
         """
         self.step_history = []
         self.error_history = []
+        self.phi_prime = []
 
     def line_search(self, x, s):
         """
@@ -129,6 +132,7 @@ class Optimization():
                 # Directly compute step direction
                 s = -G @ g
             alpha = self.line_search(x, s)
+            self.phi_prime.append(np.dot(self.problem.gradient_at(x), s))
 
             self.error_history.append(np.linalg.norm(G - G_true, "fro"))
             x = x + alpha * s
@@ -161,8 +165,7 @@ class ClassicalNewton(Optimization):
         elif self.use_exact_ls == None:
             return 1
         else:
-
-            return line_search_alt_orsolya(self.problem.objective, self.problem.gradient, x, s)
+            return arm_wolf_search(self.problem.objective, self.problem.gradient, x, s)
 
 
     def approx_hessian(self, g, x):

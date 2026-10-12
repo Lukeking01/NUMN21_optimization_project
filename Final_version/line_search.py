@@ -13,7 +13,7 @@ def _line_search_fns(obj_func, obj_grad, x, s):
     def phi(a):
         return obj_func(x + s * a)
     def phi_prime(a):
-        return np.dot(obj_grad(x + s * a), s)      
+        return np.dot(obj_grad(x + s * a), s)
 
     return phi, phi_prime
 

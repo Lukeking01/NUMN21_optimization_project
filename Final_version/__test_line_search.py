@@ -1,19 +1,17 @@
+from Rosenbrock_problem import rosenbrock, rosenbrock_gradient
 from optimization import *
 from plot import *
 
-def rosenbrock_fn(x):
-    return 100 * ((x[1] - x[0]**2)**2) + (1 - x[0])**2
-def rosenbrock_grad(x):
-    grad1 = -400 * x[0] * (x[1] - x[0]**2) - 2 * (1 - x[0])
-    grad2 = 200 * (x[1] - x[0]**2)
-    
-    return np.array([grad1, grad2])
 
 def run_rosenbrock(method, x_vals):
     for x in x_vals:
         sol = method.solve(x)
         steps = method.step_history
         H_errors = method.error_history
+        phi0 = np.array(method.phi_prime)
+
+        print("--- DEBUG phi'(0) ---")
+        print(f"{np.min(phi0)} | {np.max(phi0)}")
         
         print(f"Found solution {sol} in {len(steps)-1} steps")
         draw_contour(
@@ -22,14 +20,18 @@ def run_rosenbrock(method, x_vals):
 
         draw_error_grid(H_errors)
 
-method = ClassicalNewton(obj_func=rosenbrock_fn, obj_grad=rosenbrock_grad, use_exact_ls=False)
-# method = ClassicalNewton(obj_func=rosenbrock_fn, obj_grad=rosenbrock_grad, use_exact_ls=False)
-# method = InexactLineSearch(obj_func=rosenbrock_fn, obj_grad=rosenbrock_grad)
-# method = GoodBroyden(obj_func=rosenbrock_fn, obj_grad=rosenbrock_grad)
-# method = SymmetricBroyden(obj_func=rosenbrock_fn, obj_grad=rosenbrock_grad)
-# method = BadBroyden(obj_func=rosenbrock_fn, obj_grad=rosenbrock_grad)
-# method = DFP(obj_func=rosenbrock_fn, obj_grad=rosenbrock_grad)
-# method = BFGS(obj_func=rosenbrock_fn, obj_grad=rosenbrock_grad)
+# Setup problems
+rose_pr = Problem(objective=rosenbrock, gradient=rosenbrock_gradient)
+rose_pr_nograd = Problem(objective=rosenbrock, gradient=None)
+
+# Choose method
+method = ClassicalNewton(problem=rose_pr, use_exact_ls=False)
+# method = InexactLineSearch(problem=rose_pr)
+# method = GoodBroyden(problem=rose_pr)
+# method = SymmetricBroyden(problem=rose_pr)
+# method = BadBroyden(problem=rose_pr)
+# method = DFP(problem=rose_pr)
+# method = BFGS(problem=rose_pr)
 
 FAILED_POINTS = [
     [-3.0644475476131317, 9.742501866982106],
