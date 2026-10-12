@@ -9,7 +9,7 @@ class Optimization():
     Optimization problem class.
     """
 
-    def __init__(self, obj_func, obj_grad):
+    def __init__(self, obj_func, obj_grad=None):
         self.obj_func = obj_func
         self.obj_grad = obj_grad
         self.grad_tol = 1e-6
@@ -29,6 +29,21 @@ class Optimization():
         Should return a scalar "alpha" which will be the step size.
         """
         raise NotImplementedError("Subclass must provide an implementation!")
+
+    def approx_grad(self, x, h=1e-8):
+            x = np.asarray(x, dtype=float)
+            n = len(x)
+            grad = np.zeros(n)
+            for i in range(n):
+                e = np.zeros(n)
+                e[i] = 1.0
+                grad[i] = (self.obj_func(x+h*e)-self.obj_func(x-h*e))/(2.0*h)
+            return grad
+
+    def gradient(self, x):
+        if self.obj_grad is not None:
+            return np.asarray(self.obj_grad(x), dtype=float)
+        return self.approx_grad(x)
 
     def approx_hessian(self, g, x):
         """
@@ -64,7 +79,7 @@ class Optimization():
         H_errors = []
         
         for _ in range(self.max_steps):
-            g = self.obj_grad(x)
+            g = self.gradient(x)
 
             # Check exit criteria
             if np.linalg.norm(g) < self.grad_tol:
@@ -74,11 +89,11 @@ class Optimization():
             x_steps.append(x)
 
             is_inv = False
-            G, is_inv = self.approx_hessian(self.obj_grad, x)
+            G, is_inv = self.approx_hessian(self.gradient, x)
 
             # Evaluate Hessian (or inverse) approx
             # G_true = differentiate.hessian(self.obj_func, x).ddf # TODO Get scipy hess to work with chebyquad
-            G_true = finite_diffs(self.obj_grad, x, dx=1e-7)
+            G_true = finite_diffs(self.gradient, x, dx=1e-7)
             if is_inv:
                 G_true = np.linalg.inv(G_true)
             
@@ -118,9 +133,9 @@ class ClassicalNewton(Optimization):
         """
         
         if self.use_exact_ls:
-            return exact_line_search(self.obj_func, self.obj_grad, x, s)
+            return exact_line_search(self.obj_func, self.gradient, x, s)
         else:
-            return arm_wolf_search(self.obj_func, self.obj_grad, x, s)
+            return arm_wolf_search(self.obj_func, self.gradient, x, s)
 
     def approx_hessian(self, g, x):
         """Uses finite differences to estimate the hessian from the gradient."""
@@ -142,8 +157,8 @@ class QNewton(Optimization):
     def line_search(self, x, s):
         """Exact line search."""
         
-        return exact_line_search(self.obj_func, self.obj_grad, x, s)
-        # return arm_wolf_search(self.obj_func, self.obj_grad, x, s)
+        return exact_line_search(self.obj_func, self.gradient, x, s)
+        # return arm_wolf_search(self.obj_func, self.gradient, x, s)
 
 class GoodBroyden(QNewton):
     """
@@ -355,7 +370,7 @@ class BFGS(QNewton):
 
 class InexactLineSearch(Optimization):
     def line_search(self, x, s):
-        return arm_wolf_search(self.obj_func, self.obj_grad, x=x, s=s)
+        return arm_wolf_search(self.obj_func, self.gradient, x=x, s=s)
     
     def approx_hessian(self, g, x):
         n = x.shape[0]
