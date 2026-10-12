@@ -1,7 +1,7 @@
 import numpy as np
 import scipy.linalg as linalg
 import scipy.differentiate as differentiate
-from line_search import exact_line_search, arm_wolf_search, line_search_alt_orsolya
+from line_search import exact_line_search, arm_wolf_search
 from hessian_approx import finite_diffs
 
 class Problem:
@@ -34,7 +34,12 @@ class Problem:
 
 class Optimization():
     """
-    Optimization problem class.
+    Optimization problem class, implements a "reset" which is run internally on each "solve"
+    and implements the main solving steps for approaching a minimum of the objective function.
+
+    Subclasses that implement the chosen optimization approach should override the line_search
+    and approx_hessian functions, and the approx_hessian function should specify if it is returning
+    an approximation of the Hessian itself, or its inverse.
     """
 
     def __init__(self, problem):
@@ -95,7 +100,7 @@ class Optimization():
         self.reset()
 
         x = np.array(x0)
-        self.step_history = [x]
+        self.step_history = []
         
         for _ in range(self.max_steps):
             g = self.problem.gradient_at(x)
@@ -156,14 +161,13 @@ class ClassicalNewton(Optimization):
         elif self.use_exact_ls == None:
             return 1
         else:
-
-            return line_search_alt_orsolya(self.problem.objective, self.problem.gradient, x, s)
+            return arm_wolf_search(self.problem.objective, self.problem.gradient, x, s)
 
 
     def approx_hessian(self, g, x):
         """Uses finite differences to estimate the hessian from the gradient."""
 
-        return finite_diffs(g, x), False
+        return finite_diffs(g, x, dx=1e-5), False
 
 ### Quasi-Newton Implementations
 
@@ -172,16 +176,12 @@ class QNewton(Optimization):
     Parent class of all Quasi-Newton implementations. Uses line search with Wolfe conditions
     for the line search step, and only expects that subclasses implement the inverse Hessian
     approximation function.
-
-    TODO For now using exact line search as the arm_wolfe currently fails if the step direction
-    isn't in a descent direction.
     """
 
     def line_search(self, x, s):
-        """Exact line search."""
+        """Line search with Armijo-Wolfe conditions."""
         
-
-        return line_search_alt_orsolya(self.problem.objective, self.problem.gradient, x, s)
+        return arm_wolf_search(self.problem.objective, self.problem.gradient, x, s)
 
 
 class GoodBroyden(QNewton):
@@ -202,6 +202,7 @@ class GoodBroyden(QNewton):
         self.H_inv = None
     
     def reset(self):
+        super().reset()
         self.xp = None
         self.gp = None
         self.H_inv = None
@@ -244,6 +245,7 @@ class BadBroyden(QNewton):
         self.H_inv = None
     
     def reset(self):
+        super().reset()
         self.xp = None
         self.gp = None
         self.H_inv = None
@@ -287,6 +289,7 @@ class SymmetricBroyden(QNewton):
         self.H_inv = None
     
     def reset(self):
+        super().reset()
         self.xp = None
         self.gp = None
         self.H_inv = None
@@ -329,6 +332,7 @@ class DFP(QNewton):
         self.H_inv = None
 
     def reset(self):
+        super().reset()
         self.xp = None
         self.gp = None
         self.H_inv = None
@@ -365,6 +369,7 @@ class BFGS(QNewton):
         self.H_inv = None
 
     def reset(self):
+        super().reset()
         self.xp = None
         self.gp = None
         self.H_inv = None
@@ -394,10 +399,8 @@ class BFGS(QNewton):
 
 class InexactLineSearch(Optimization):
     def line_search(self, x, s):
+        return arm_wolf_search(self.problem.objective, self.problem.gradient, x=x, s=s)
 
-        return line_search_alt_orsolya(self.problem.objective, self.problem.gradient, x=x, s=s)
-
-    
     def approx_hessian(self, g, x):
         n = x.shape[0]
         return np.identity(n), True

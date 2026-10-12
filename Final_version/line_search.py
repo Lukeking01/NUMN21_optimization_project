@@ -13,7 +13,7 @@ def _line_search_fns(obj_func, obj_grad, x, s):
     def phi(a):
         return obj_func(x + s * a)
     def phi_prime(a):
-        return np.dot(obj_grad(x + s * a), s)      
+        return np.dot(obj_grad(x + s * a), s)
 
     return phi, phi_prime
 
@@ -32,7 +32,7 @@ def exact_line_search(obj_func, obj_grad, x, s):
     res = so.minimize_scalar(phi, bracket=[0, mu])
     return res.x
 
-def arm_wolf_search(obj_func, obj_grad, x, s):
+def arm_wolf_search(obj_func, obj_grad, x, s, alpha0 = 1.0):
     """
     Line search based on Armijo-Wolfe conditions.
     
@@ -119,7 +119,7 @@ def arm_wolf_search(obj_func, obj_grad, x, s):
 
     # Pick an initial guess
     alpha_prev = 0
-    alpha = a + mu / 4
+    alpha = alpha0
     for _ in range(1, max_steps):
         if phi(alpha) < lower_bound:
             return alpha
@@ -193,4 +193,3 @@ def zoom(func, gradient, x, s, alpha_low, alpha_high, f0, dphi0, rho, sigma, max
             alpha_low = alpha_j
 
     return alpha_j
-

@@ -1,39 +1,44 @@
+from Rosenbrock_problem import rosenbrock, rosenbrock_gradient
 from optimization import *
 from plot import *
 
-def rosenbrock_fn(x):
-    return 100 * ((x[1] - x[0]**2)**2) + (1 - x[0])**2
-def rosenbrock_grad(x):
-    grad1 = -400 * x[0] * (x[1] - x[0]**2) - 2 * (1 - x[0])
-    grad2 = 200 * (x[1] - x[0]**2)
+def run_rosenbrock(method, x_vals, with_plotting=True):
+    step_count = 0
     
-    return np.array([grad1, grad2])
-
-def run_rosenbrock(method, x_vals):
     for x in x_vals:
         sol = method.solve(x)
         steps = method.step_history
         H_errors = method.error_history
-        
+
+        step_count += (len(steps)-1)
         print(f"Found solution {sol} in {len(steps)-1} steps")
-        draw_contour(
-            rosenbrock_fn, steps=steps, print_labels=False, n_levels=14
-        )
+        if with_plotting:
+            draw_contour(
+                rosenbrock_fn, steps=steps, print_labels=False, n_levels=14
+            )
 
-        draw_error_grid(H_errors)
+            draw_error_grid(H_errors)
+    print(f"AVERAGE STEPS TAKEN: {step_count / x_vals.shape[0]}")
 
-method = ClassicalNewton(obj_func=rosenbrock_fn, obj_grad=rosenbrock_grad, use_exact_ls=False)
-# method = ClassicalNewton(obj_func=rosenbrock_fn, obj_grad=rosenbrock_grad, use_exact_ls=False)
-# method = InexactLineSearch(obj_func=rosenbrock_fn, obj_grad=rosenbrock_grad)
-# method = GoodBroyden(obj_func=rosenbrock_fn, obj_grad=rosenbrock_grad)
-# method = SymmetricBroyden(obj_func=rosenbrock_fn, obj_grad=rosenbrock_grad)
-# method = BadBroyden(obj_func=rosenbrock_fn, obj_grad=rosenbrock_grad)
-# method = DFP(obj_func=rosenbrock_fn, obj_grad=rosenbrock_grad)
-# method = BFGS(obj_func=rosenbrock_fn, obj_grad=rosenbrock_grad)
+# Setup problems
+rose_pr = Problem(objective=rosenbrock, gradient=rosenbrock_gradient)
+rose_pr_nograd = Problem(objective=rosenbrock, gradient=None)
 
-FAILED_POINTS = [
-    [-3.0644475476131317, 9.742501866982106],
-    [-1.1263393130418025, 1.4502462268373029],
+# Choose method
+method = ClassicalNewton(problem=rose_pr, use_exact_ls=False)
+# method = InexactLineSearch(problem=rose_pr)
+# method = GoodBroyden(problem=rose_pr) # TODO Not working
+# method = SymmetricBroyden(problem=rose_pr) # TODO Not working
+# method = BadBroyden(problem=rose_pr) # TODO Not working
+# method = DFP(problem=rose_pr)
+# method = BFGS(problem=rose_pr)
+
+FAILED_POINTS = np.array([
     [-1.18315709,  1.40683587],
-]
-run_rosenbrock(method, FAILED_POINTS)
+    [0.95000535, 0.90914311],
+    [0.4431342 , 0.21549486],
+])
+
+# points = FAILED_POINTS
+points = np.random.random((40, 2)) * 4 - 1
+run_rosenbrock(method, points, with_plotting=True)

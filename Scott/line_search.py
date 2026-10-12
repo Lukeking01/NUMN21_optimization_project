@@ -93,10 +93,7 @@ def arm_wolf_search(obj_func, obj_grad, x, s):
                 min_z = stpt
 
         # Convert back to alpha in range a, b
-        new_alpha = a + min_z*(b - a)
-        if (new_alpha > a*1.02 and new_alpha > b*1.02) or (new_alpha < a*0.98 and new_alpha < b*0.98):
-            raise ValueError("Cubic interval yielded invalid value outside of range.")
-        return new_alpha
+        return a + min_z*(b - a)
 
     # Solve bracket
     def solve_bracket(a, b):
