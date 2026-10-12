@@ -26,7 +26,7 @@ def grad(xy):
     dfdy = 2*re*(-6*x*y)          + 2*im*(3*x**2 - 3*y**2)
     return np.array([dfdx, dfdy])
 
-problem = op.Optimization(f, grad)
+problem = op.Problem(f, grad)
 
 # The three roots of z³ = 1
 roots = np.array([
@@ -37,7 +37,7 @@ roots = np.array([
 
 def run_one_Newton(xy):
     """Run NewtonMethod and return which root it found + iterations"""
-    solver = ClassicalNewton(None,f,grad)
+    solver = ClassicalNewton(None,problem)
     sol = solver.solve(np.asarray(xy, dtype=float))
     
     # which root
@@ -50,7 +50,7 @@ def run_one_Newton(xy):
     
 def run_one_BFGS(xy):
     """Run BFGS and return which root it found + iterations"""
-    solver = BFGS(f, grad)
+    solver = BFGS(problem)
     sol = solver.solve(np.asarray(xy, dtype=float))
     
     # which root
