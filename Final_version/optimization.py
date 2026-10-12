@@ -13,9 +13,19 @@ class Problem:
         return self.objective(x)
 
     def gradient_at(self, x):
-        if self.gradient is None:
-            raise ValueError("No gradient was provided.")
-        return self.gradient(x)
+        if self.gradient is not None:
+            return np.asarray(self.gradient(x), dtype=float)
+        return self.approx_grad(x)
+
+    def approx_grad(self, x, h=1e-8):
+        x = np.asarray(x, dtype=float)
+        n = len(x)
+        grad = np.zeros(n)
+        for i in range(n):
+            e = np.zeros(n)
+            e[i] = 1.0
+            grad[i] = (self.objective(x+h*e)-self.objective(x-h*e))/(2.0*h)
+        return grad
 
 class Optimization():
     """
@@ -47,21 +57,6 @@ class Optimization():
         Should return a scalar "alpha" which will be the step size.
         """
         raise NotImplementedError("Subclass must provide an implementation!")
-
-    def approx_grad(self, x, h=1e-8):
-            x = np.asarray(x, dtype=float)
-            n = len(x)
-            grad = np.zeros(n)
-            for i in range(n):
-                e = np.zeros(n)
-                e[i] = 1.0
-                grad[i] = (self.obj_func(x+h*e)-self.obj_func(x-h*e))/(2.0*h)
-            return grad
-
-    def gradient(self, x):
-        if self.obj_grad is not None:
-            return np.asarray(self.obj_grad(x), dtype=float)
-        return self.approx_grad(x)
 
     def approx_hessian(self, g, x):
         """
