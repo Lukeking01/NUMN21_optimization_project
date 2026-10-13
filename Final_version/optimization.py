@@ -51,6 +51,7 @@ class Optimization():
         # Eval history
         self.step_history = []
         self.error_history = []
+        self.ascent_dir_count = 0
 
     def reset(self):
         """
@@ -58,6 +59,7 @@ class Optimization():
         """
         self.step_history = []
         self.error_history = []
+        self.ascent_dir_count = 0
 
     def line_search(self, x, s):
         """
@@ -130,6 +132,10 @@ class Optimization():
                 # Directly compute step direction
                 s = -G @ g
             alpha = self.line_search(x, s)
+
+            # Update count if the search direction was not a descent direction
+            if alpha < 0:
+                self.ascent_dir_count += 1
 
             x = x + alpha * s
 
