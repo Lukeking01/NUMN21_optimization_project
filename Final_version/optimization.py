@@ -239,21 +239,6 @@ class BadBroyden(QNewton):
         By C. G. Broyden
     """
     
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # x from the previous iteration
-        self.xp = None
-        # f'(x) from the previous iteration
-        self.gp = None
-        # Previous iteration Hessian (inv) approx
-        self.H_inv = None
-    
-    def reset(self):
-        super().reset()
-        self.xp = None
-        self.gp = None
-        self.H_inv = None
-    
     def approx_hessian(self, x):
         g = self.problem.gradient
 
@@ -285,21 +270,6 @@ class SymmetricBroyden(QNewton):
             By C. G. Broyden
     """
     
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # x from the previous iteration
-        self.xp = None
-        # f'(x) from the previous iteration
-        self.gp = None
-        # Previous iteration Hessian (inv) approx
-        self.H_inv = None
-    
-    def reset(self):
-        super().reset()
-        self.xp = None
-        self.gp = None
-        self.H_inv = None
-    
     def approx_hessian(self, x):
         g = self.problem.gradient
         
@@ -329,21 +299,6 @@ class DFP(QNewton):
     """
     Uses the DFP updating formula to update the inv Hessian on each step.
     """
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # x from the previous iteration
-        self.xp = None
-        # f'(x) from the previous iteration
-        self.gp = None
-        # Previous iteration Hessian (inv) approx
-        self.H_inv = None
-
-    def reset(self):
-        super().reset()
-        self.xp = None
-        self.gp = None
-        self.H_inv = None
     
     def approx_hessian(self, x):
         g = self.problem.gradient
@@ -368,21 +323,6 @@ class BFGS(QNewton):
     """
     Uses the BFGS updating formula to update the inv Hessian on each step.
     """
-    
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # x from the previous iteration
-        self.xp = None
-        # f'(x) from the previous iteration
-        self.gp = None
-        # Previous iteration Hessian (inv) approx
-        self.H_inv = None
-
-    def reset(self):
-        super().reset()
-        self.xp = None
-        self.gp = None
-        self.H_inv = None
     
     def approx_hessian(self, x):
         g = self.problem.gradient
