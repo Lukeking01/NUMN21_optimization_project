@@ -43,10 +43,13 @@ def arm_wolf_search(problem, x, s, alpha0 = 1.0):
 
     :returns float: The step size determined by the Armijo-Wolfe conditions.
     """
+    flipped_s = False
     phi, phi_prime = _line_search_fns(problem, x, s)
 
     if phi_prime(0) > 0:
-        raise ValueError(f"{s=} is not a valid step direction for {x=}!")
+        # "s" is not a descent direction, so we will search in the opposite direction.
+        flipped_s = True
+        phi, phi_prime = _line_search_fns(problem, x, -s)
 
     # Constants
     max_steps = 100
@@ -120,15 +123,20 @@ def arm_wolf_search(problem, x, s, alpha0 = 1.0):
     # Pick an initial guess
     alpha_prev = 0
     alpha = alpha0
+    solution = alpha0
     for _ in range(1, max_steps):
         if phi(alpha) < lower_bound:
-            return alpha
+            solution = alpha
+            break
         if phi(alpha) > phi(0) + alpha * rho * phi_prime(0) or phi(alpha) >= phi(alpha_prev):
-            return solve_bracket(alpha_prev, alpha)
+            solution = solve_bracket(alpha_prev, alpha)
+            break
         if abs(phi_prime(alpha)) <= -sigma * phi_prime(0):
-            return alpha
+            solution = alpha
+            break
         if phi_prime(alpha) >= 0:
-            return solve_bracket(alpha, alpha_prev)
+            solution = solve_bracket(alpha, alpha_prev)
+            break
         if mu <= 2 * alpha - alpha_prev:
             tmp = alpha
             alpha = mu
@@ -137,7 +145,7 @@ def arm_wolf_search(problem, x, s, alpha0 = 1.0):
             tmp = alpha
             alpha = pick_value_cubic(2*alpha - alpha_prev, min(mu, alpha + tau1*(alpha-alpha_prev)))
             alpha_prev = tmp
-    return alpha
+    return solution if not flipped_s else -solution
 
 def line_search_alt_orsolya(func, gradient, x, s, rho=1e-4, sigma=0.9, max_alpha=10.0, max_iter=1000):
     f0 = func(x)

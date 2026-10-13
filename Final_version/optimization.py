@@ -199,11 +199,7 @@ class QNewton(Optimization):
     def line_search(self, x, s):
         """Line search with Armijo-Wolfe conditions."""
 
-        # TODO For now using exact line search. Looks like when "s" is not a descent direction,
-        # line search can return a negative value, which my Armijo-Wolfe cannot. So if Armijo-Wolfe
-        # returns a value error, we should retry with -s instead of s. When I tried this, it gave
-        # the same value of alpha as from exact line search.
-        return exact_line_search(self.problem, x, s)
+        return arm_wolf_search(self.problem, x, s)
 
 
 class GoodBroyden(QNewton):

@@ -6,7 +6,7 @@ from __test_line_search import run_rosenbrock
 rose_pr = Problem(rosenbrock, rosenbrock_gradient)
 cheb_pr = Problem(chebyquad, gradchebyquad)
 
-method = BadBroyden(problem=rose_pr)
+method = GoodBroyden(problem=rose_pr)
 # method = GoodBroyden(cheb_pr)
 
 if __name__ == "__main__":

@@ -27,9 +27,9 @@ rose_pr_nograd = Problem(objective=rosenbrock, gradient=None)
 # Choose method
 method = ClassicalNewton(problem=rose_pr, use_exact_ls=False)
 # method = InexactLineSearch(problem=rose_pr)
-# method = GoodBroyden(problem=rose_pr) # TODO Not working
-# method = SymmetricBroyden(problem=rose_pr) # TODO Not working
-# method = BadBroyden(problem=rose_pr) # TODO Not working
+# method = GoodBroyden(problem=rose_pr)
+# method = SymmetricBroyden(problem=rose_pr)
+# method = BadBroyden(problem=rose_pr) # TODO Not working, is this expected?
 # method = DFP(problem=rose_pr)
 # method = BFGS(problem=rose_pr)
 
@@ -41,5 +41,5 @@ if __name__ == "__main__":
     ])
 
     # points = FAILED_POINTS
-    points = np.random.random((40, 2)) * 4 - 1
-    run_rosenbrock(method, points, with_plotting=True)
+    points = np.random.random((100, 2)) * 4 - 1
+    run_rosenbrock(method, points, with_plotting=False)
