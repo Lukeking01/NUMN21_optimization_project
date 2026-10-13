@@ -71,7 +71,11 @@ def bad_broyden_scott(H, s, y):
     :param s: Delta between previous location and current location.
     :param y: Delta between the current grad and the previous grad.
     """
-    pass
+    denom = np.dot(y, y)
+    if abs(denom) > 1e-12:
+        # Rank 1 update
+        H = H + np.outer(s-H@y,y) / denom
+    return H
 def bad_broyden_linn(H, s, y):
     pass
 def bad_broyden_orsolya(H, s, y):
@@ -85,7 +89,14 @@ def sym_broyden_scott(H, s, y):
     :param s: Delta between previous location and current location.
     :param y: Delta between the current grad and the previous grad.
     """
-    pass
+    denom1 = np.dot(y,H@y)
+    denom2 = np.dot(s,y)
+
+    if abs(denom1) > 1e-12:
+        H = H - np.outer(H@y,y@H)/denom1
+    if abs(denom2) > 1e-12:
+        H = H - np.outer(s,s)/denom2
+    return H
 def sym_broyden_linn(H, s, y):
     pass
 def sym_broyden_orsolya(H, s, y):
@@ -99,7 +110,14 @@ def DFP_scott(H, s, y):
     :param s: Delta between previous location and current location.
     :param y: Delta between the current grad and the previous grad.
     """
-    pass
+    denom1 = np.dot(y,H@y)
+    denom2 = np.dot(y,s)
+
+    if abs(denom1) > 1e-12:
+        H = H - np.outer(H@y,y@H)/denom1
+    if abs(denom2) > 1e-12:
+        H = H - np.outer(s,s)/denom2
+    return H
 def DFP_linn(H, s, y):
     pass
 def DFP_orsolya(H, s, y):
@@ -113,7 +131,14 @@ def BFGS_scott(H, s, y):
     :param s: Delta between previous location and current location.
     :param y: Delta between the current grad and the previous grad.
     """
-    pass
+    sy = np.dot(y, s)
+    if abs(sy) <= 1e-12:
+        return H
+    p = 1 / sy
+    I = np.identity(s.shape[0])
+
+    H = (I-p*np.outer(s,y))@H@(I-p*np.outer(y,s))+p*np.outer(s,s)
+    return H
 def BFGS_linn(H, s, y):
     pass
 def BFGS_orsolya(H, s, y):

@@ -1,7 +1,7 @@
 import numpy as np
 import scipy.linalg as linalg
 from line_search import exact_line_search, arm_wolf_search
-from hessian_approx import finite_diffs, good_broyden_scott
+from hessian_approx import *
 
 class Problem:
     def __init__(self, objective, gradient=None):
@@ -221,6 +221,7 @@ class GoodBroyden(QNewton):
         if not self.xp is None and not self.gp is None:
             s = x - self.xp
             y = g(x) - self.gp
+
             self.H_inv = good_broyden_scott(self.H_inv, s, y)
         else:
             self.H_inv = np.identity(x.shape[0])
@@ -244,14 +245,10 @@ class BadBroyden(QNewton):
 
         # Update hessian approx
         if not self.xp is None and not self.gp is None:
-            v = x - self.xp
+            s = x - self.xp
             y = g(x) - self.gp
-            H = self.H_inv
 
-            denom = np.dot(y, y)
-            if abs(denom) > 1e-12:
-                # Rank 1 update
-                self.H_inv = H + np.outer(v-H@y,y) / denom
+            self.H_inv = bad_broyden_scott(self.H_inv, s, y)
         else:
             self.H_inv = np.identity(x.shape[0])
 
@@ -275,17 +272,10 @@ class SymmetricBroyden(QNewton):
         
         # Update hessian approx
         if not self.xp is None and not self.gp is None:
-            v = x - self.xp
+            s = x - self.xp
             y = g(x) - self.gp
-            H = self.H_inv
 
-            denom1 = np.dot(y,H@y)
-            denom2 = np.dot(v,y)
-
-            if abs(denom1) > 1e-12:
-                self.H_inv -= np.outer(H@y,y@H)/denom1
-            if abs(denom2) > 1e-12:
-                self.H_inv -= np.outer(v,v)/denom2
+            self.H_inv = sym_broyden_scott(self.H_inv, s, y)
         else:
             self.H_inv = np.identity(x.shape[0])
 
@@ -305,11 +295,10 @@ class DFP(QNewton):
 
         # Update hessian approx
         if not self.xp is None and not self.gp is None:
-            v = x - self.xp
+            s = x - self.xp
             y = g(x) - self.gp
-            H = self.H_inv
 
-            self.H_inv = H - (np.outer(H@y,y@H))/(np.dot(y,H@y)) + (np.outer(v,v))/(np.dot(y,v))
+            self.H_inv = DFP_scott(self.H_inv, s, y)
         else:
             self.H_inv = np.identity(x.shape[0])
 
@@ -329,13 +318,10 @@ class BFGS(QNewton):
 
         # Update hessian approx
         if not self.xp is None and not self.gp is None:
-            v = x - self.xp
+            s = x - self.xp
             y = g(x) - self.gp
-            p = 1 / np.dot(y, v)
-            H = self.H_inv
-            I = np.identity(x.shape[0])
 
-            self.H_inv = (I-p*np.outer(v,y))@H@(I-p*np.outer(y,v))+p*np.outer(v,v)
+            self.H_inv = BFGS_scott(self.H_inv, s, y)
         else:
             self.H_inv = np.identity(x.shape[0])
 
