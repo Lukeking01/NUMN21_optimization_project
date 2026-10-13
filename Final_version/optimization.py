@@ -67,7 +67,7 @@ class Optimization():
         """
         raise NotImplementedError("Subclass must provide an implementation!")
 
-    def approx_hessian(self, g, x):
+    def approx_hessian(self, x):
         """
         Abstract method - to be overriden by subclass.
 
@@ -112,7 +112,7 @@ class Optimization():
             self.step_history.append(x)
 
             is_inv = False
-            G, is_inv = self.approx_hessian(self.problem.gradient, x)
+            G, is_inv = self.approx_hessian(x)
 
             # Evaluate Hessian (or inverse) approx
             G_true = finite_diffs(self.problem.gradient, x, dx=1e-5)
@@ -157,17 +157,17 @@ class ClassicalNewton(Optimization):
         """
         
         if self.use_exact_ls:
-            return exact_line_search(self.problem.objective, self.problem.gradient, x, s)
+            return exact_line_search(self.problem, x, s)
         elif self.use_exact_ls == None:
             return 1
         else:
-            return arm_wolf_search(self.problem.objective, self.problem.gradient, x, s)
+            return arm_wolf_search(self.problem, x, s)
 
 
-    def approx_hessian(self, g, x):
+    def approx_hessian(self, x):
         """Uses finite differences to estimate the hessian from the gradient."""
 
-        return finite_diffs(g, x, dx=1e-5), False
+        return finite_diffs(self.problem.gradient, x, dx=1e-5), False
 
 ### Quasi-Newton Implementations
 
@@ -181,7 +181,7 @@ class QNewton(Optimization):
     def line_search(self, x, s):
         """Line search with Armijo-Wolfe conditions."""
         
-        return arm_wolf_search(self.problem.objective, self.problem.gradient, x, s)
+        return arm_wolf_search(self.problem, x, s)
 
 
 class GoodBroyden(QNewton):
@@ -207,7 +207,9 @@ class GoodBroyden(QNewton):
         self.gp = None
         self.H_inv = None
     
-    def approx_hessian(self, g, x):
+    def approx_hessian(self, x):
+        g = self.problem.gradient
+        
         # Update hessian approx
         if not self.xp is None and not self.gp is None:
             s = x - self.xp
@@ -245,7 +247,9 @@ class BadBroyden(QNewton):
         self.gp = None
         self.H_inv = None
     
-    def approx_hessian(self, g, x):
+    def approx_hessian(self, x):
+        g = self.problem.gradient
+
         # Update hessian approx
         if not self.xp is None and not self.gp is None:
             v = x - self.xp
@@ -289,7 +293,9 @@ class SymmetricBroyden(QNewton):
         self.gp = None
         self.H_inv = None
     
-    def approx_hessian(self, g, x):
+    def approx_hessian(self, x):
+        g = self.problem.gradient
+        
         # Update hessian approx
         if not self.xp is None and not self.gp is None:
             v = x - self.xp
@@ -332,7 +338,9 @@ class DFP(QNewton):
         self.gp = None
         self.H_inv = None
     
-    def approx_hessian(self, g, x):
+    def approx_hessian(self, x):
+        g = self.problem.gradient
+
         # Update hessian approx
         if not self.xp is None and not self.gp is None:
             v = x - self.xp
@@ -369,8 +377,8 @@ class BFGS(QNewton):
         self.gp = None
         self.H_inv = None
     
-    def approx_hessian(self, g, x):
-        """Uses finite differences to estimate the hessian from the gradient."""
+    def approx_hessian(self, x):
+        g = self.problem.gradient
 
         # Update hessian approx
         if not self.xp is None and not self.gp is None:
@@ -394,8 +402,8 @@ class BFGS(QNewton):
 
 class InexactLineSearch(Optimization):
     def line_search(self, x, s):
-        return arm_wolf_search(self.problem.objective, self.problem.gradient, x=x, s=s)
+        return arm_wolf_search(self.problem, x=x, s=s)
 
-    def approx_hessian(self, g, x):
+    def approx_hessian(self, x):
         n = x.shape[0]
         return np.identity(n), True

@@ -1,9 +1,10 @@
 import numpy as np
 import scipy.optimize as so
+from optimization import Problem
 
 ### HELPER FUNCTIONS ###
 
-def _line_search_fns(obj_func, obj_grad, x, s):
+def _line_search_fns(problem: Problem, x, s):
     """
     Get the line search functions phi and phi_prime where:
     | phi(a) = x + as | with "x" and "s" given.
@@ -11,28 +12,28 @@ def _line_search_fns(obj_func, obj_grad, x, s):
     Returns phi, phi_prime
     """
     def phi(a):
-        return obj_func(x + s * a)
+        return problem.objective(x + s * a)
     def phi_prime(a):
-        return np.dot(obj_grad(x + s * a), s)
+        return np.dot(problem.gradient(x + s * a), s)
 
     return phi, phi_prime
 
 ### LINE SEARCH FUNCTIONS ###
 
-def exact_line_search(obj_func, obj_grad, x, s):
+def exact_line_search(problem: Problem, x, s):
     """
     Exact line search using scipy's minimize scalar function on the function
     | phi(a) = x + as | with "x" and "s" given.
     """
 
-    phi, phi_prime = _line_search_fns(obj_func, obj_grad, x, s)
+    phi, phi_prime = _line_search_fns(problem, x, s)
 
     rho = 0.01
     mu = -phi(0) / (rho * phi_prime(0))
     res = so.minimize_scalar(phi, bracket=[0, mu])
     return res.x
 
-def arm_wolf_search(obj_func, obj_grad, x, s, alpha0 = 1.0):
+def arm_wolf_search(problem: Problem, x, s, alpha0 = 1.0):
     """
     Line search based on Armijo-Wolfe conditions.
     
@@ -43,7 +44,7 @@ def arm_wolf_search(obj_func, obj_grad, x, s, alpha0 = 1.0):
 
     :returns float: The step size determined by the Armijo-Wolfe conditions.
     """
-    phi, phi_prime = _line_search_fns(obj_func, obj_grad, x, s)
+    phi, phi_prime = _line_search_fns(problem, x, s)
 
     if phi_prime(0) > 0:
         raise ValueError(f"{s=} is not a valid step direction for {x=}!")
