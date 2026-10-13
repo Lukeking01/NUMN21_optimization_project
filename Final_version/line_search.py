@@ -1,10 +1,9 @@
 import numpy as np
 import scipy.optimize as so
-from optimization import Problem
 
 ### HELPER FUNCTIONS ###
 
-def _line_search_fns(problem: Problem, x, s):
+def _line_search_fns(problem, x, s):
     """
     Get the line search functions phi and phi_prime where:
     | phi(a) = x + as | with "x" and "s" given.
@@ -20,7 +19,7 @@ def _line_search_fns(problem: Problem, x, s):
 
 ### LINE SEARCH FUNCTIONS ###
 
-def exact_line_search(problem: Problem, x, s):
+def exact_line_search(problem, x, s):
     """
     Exact line search using scipy's minimize scalar function on the function
     | phi(a) = x + as | with "x" and "s" given.
@@ -33,7 +32,7 @@ def exact_line_search(problem: Problem, x, s):
     res = so.minimize_scalar(phi, bracket=[0, mu])
     return res.x
 
-def arm_wolf_search(problem: Problem, x, s, alpha0 = 1.0):
+def arm_wolf_search(problem, x, s, alpha0 = 1.0):
     """
     Line search based on Armijo-Wolfe conditions.
     

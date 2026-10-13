@@ -16,5 +16,5 @@ if __name__ == "__main__":
         [0.4431342 , 0.21549486],
     ])
     # points = FAILED_POINTS
-    points = np.random.random((20, 2)) * 3.5 - 1
+    points = np.random.random((20, 2)) * 3.5 - 2
     run_rosenbrock(method, points, True)

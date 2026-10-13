@@ -115,7 +115,7 @@ class Optimization():
             G, is_inv = self.approx_hessian(x)
 
             # Evaluate Hessian (or inverse) approx
-            G_true = finite_diffs(self.problem.gradient, x, dx=1e-5)
+            G_true = finite_diffs(self.problem.gradient, x, dx=1e-8)
             if is_inv:
                 try:
                     G_true = np.linalg.inv(G_true)
@@ -178,10 +178,32 @@ class QNewton(Optimization):
     approximation function.
     """
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Previous Hessian approx
+        self.H = None
+        # Previous iteration Hessian (inv) approx
+        self.H_inv = None
+        # x from the previous iteration
+        self.xp = None
+        # f'(x) from the previous iteration
+        self.gp = None
+
+    def reset(self):
+        super().reset()
+        self.H = None
+        self.H_inv = None
+        self.xp = None
+        self.gp = None
+
     def line_search(self, x, s):
         """Line search with Armijo-Wolfe conditions."""
-        
-        return arm_wolf_search(self.problem, x, s)
+
+        # TODO For now using exact line search. Looks like when "s" is not a descent direction,
+        # line search can return a negative value, which my Armijo-Wolfe cannot. So if Armijo-Wolfe
+        # returns a value error, we should retry with -s instead of s. When I tried this, it gave
+        # the same value of alpha as from exact line search.
+        return exact_line_search(self.problem, x, s)
 
 
 class GoodBroyden(QNewton):
@@ -191,21 +213,6 @@ class GoodBroyden(QNewton):
     Source: A Class of Methods for Solving Nonlinear Simultaneous Equations
             By C. G. Broyden
     """
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # x from the previous iteration
-        self.xp = None
-        # f'(x) from the previous iteration
-        self.gp = None
-        # Previous iteration Hessian (inv) approx
-        self.H_inv = None
-    
-    def reset(self):
-        super().reset()
-        self.xp = None
-        self.gp = None
-        self.H_inv = None
     
     def approx_hessian(self, x):
         g = self.problem.gradient
@@ -392,7 +399,7 @@ class BFGS(QNewton):
         else:
             self.H_inv = np.identity(x.shape[0])
 
-        # Store x and g_x for next iteration
+        # Store x and g(x) for next iteration
         self.xp = x
         self.gp = g(x)
 
