@@ -14,22 +14,59 @@ Grid plots for the Hessian approximations from Quasi-Newton methods. The current
 
 ## Images/Outputs
 
-1. Rosenbrock pathing and Hessian error approx graphs. Output could contain the number of steps taken for a given path, or the average for 100 random starting points. This should be for each of the methods we were asked to implement.
-    - Classical Newton's Method (exact/inexact line search)
-    - Inexact Line Search
-    - Broyden's Good/Bad Updates
-    - Broyden's Symmetric Updates
-    - DFP Updates
-    - BFGS Updates
+1. Rosenbrock path and Hessian error for:
+    - Classical Newton
+    - Inexact line search
+    - Bad Broyden
+    - Good Broyden
+    - Symmetric Broyden
+    - DFP
+    - BFGS
+The output contains the number of steps taken. 
+
+#### Classical Newton 
+<img width="49%" height="584" alt="Screenshot 2026-10-12 at 22 50 58" src="https://github.com/user-attachments/assets/a68d0f07-50a0-442b-8eb9-2b2d55c87b82" />
+<img width="49%" height="482" alt="Screenshot 2026-10-12 at 22 50 40" src="https://github.com/user-attachments/assets/8844e49c-da3a-48a7-a013-8c03068c6a8b" />
+
+
+#### Inexact line search
+<img width="49%" height="586" alt="Screenshot 2026-10-12 at 22 30 45" src="https://github.com/user-attachments/assets/56eea838-674e-4ca1-a3ff-762628db78c1" />
+<img width="49%" height="486" alt="Screenshot 2026-10-12 at 22 30 20" src="https://github.com/user-attachments/assets/a0e97745-29fc-46e6-a8d0-eba312925310" />
+
+#### Bad Broyden
+<img width="49%" height="584" alt="Screenshot 2026-10-12 at 22 32 13" src="https://github.com/user-attachments/assets/c6c923b4-ce2e-4ff0-ab98-6ebcec81fb8f" />
+<img width="49%" height="492" alt="Screenshot 2026-10-12 at 22 31 54" src="https://github.com/user-attachments/assets/435451ae-f612-4eea-84ea-694d30b68db8" />
+
+#### Good Broyden
+<img width="49%" height="586" alt="Screenshot 2026-10-12 at 22 48 38" src="https://github.com/user-attachments/assets/36ca03b7-2481-40cc-ba5a-b3b83dd15759" />
+<img width="49%" height="482" alt="Screenshot 2026-10-12 at 22 48 14" src="https://github.com/user-attachments/assets/5933dbae-463a-4e19-9510-fc3d97924ec3" />
+
+#### Symmetric Broyden
+<img width="49%" height="486" alt="Screenshot 2026-10-12 at 22 45 50" src="https://github.com/user-attachments/assets/5d210095-abdf-423a-942c-a6b853b6bb6d" />
+<img width="49%" height="579" alt="Screenshot 2026-10-12 at 22 41 36" src="https://github.com/user-attachments/assets/da1a7304-1fec-438d-8170-7e9b16f6fe06" />
+
+#### DFP
+<img width="49%" height="583" alt="Screenshot 2026-10-12 at 22 35 14" src="https://github.com/user-attachments/assets/335b11e9-77ac-4c01-8099-bb55e4e730dc" />
+<img width="49%" height="486" alt="Screenshot 2026-10-12 at 22 34 55" src="https://github.com/user-attachments/assets/da70e64a-50cd-4fb0-9d7b-c7952a432168" />
+
+#### BFGS
+<img width="49%" height="583" alt="Screenshot 2026-10-12 at 22 36 09" src="https://github.com/user-attachments/assets/a9c30cba-c9f2-405f-927e-40eb8bd1724c" />
+<img width="49%" height="483" alt="Screenshot 2026-10-12 at 22 35 50" src="https://github.com/user-attachments/assets/6cbd0fb9-3655-4bc7-90db-bab8e84dc051" />
+
+
 2. Maybe a series of images showing an interesting example of line search? Could include graphs showing the process when just bisecting the interval each time, and another with the cubic interpolation logic.
+
 
 ## Assigment Tasks
 
 ### Task 5 
 Testing the performance of the Rosenbrock's function and demonstrating its behaviour with a contour plot.
 
+
 ### Task 7
 Testing the inexact line search method on the Rosenbrock's function with the parameters given on page 37 of the book.
+
+
 
 ### Task 11
 Computing the chebyquad function provided for the points $n=4,8,11$ and comparing it to the built in BFGS function.
