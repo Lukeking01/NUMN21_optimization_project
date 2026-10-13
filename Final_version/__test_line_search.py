@@ -33,12 +33,13 @@ method = ClassicalNewton(problem=rose_pr, use_exact_ls=False)
 # method = DFP(problem=rose_pr)
 # method = BFGS(problem=rose_pr)
 
-FAILED_POINTS = np.array([
-    [-1.18315709,  1.40683587],
-    [0.95000535, 0.90914311],
-    [0.4431342 , 0.21549486],
-])
+if __name__ == "__main__":
+    FAILED_POINTS = np.array([
+        [-1.18315709,  1.40683587],
+        [0.95000535, 0.90914311],
+        [0.4431342 , 0.21549486],
+    ])
 
-# points = FAILED_POINTS
-points = np.random.random((40, 2)) * 4 - 1
-run_rosenbrock(method, points, with_plotting=True)
+    # points = FAILED_POINTS
+    points = np.random.random((40, 2)) * 4 - 1
+    run_rosenbrock(method, points, with_plotting=True)

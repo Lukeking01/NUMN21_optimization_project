@@ -1,8 +1,7 @@
 import numpy as np
 import scipy.linalg as linalg
-import scipy.differentiate as differentiate
 from line_search import exact_line_search, arm_wolf_search
-from hessian_approx import finite_diffs
+from hessian_approx import finite_diffs, good_broyden_scott
 
 class Problem:
     def __init__(self, objective, gradient=None):
@@ -116,21 +115,22 @@ class Optimization():
             G, is_inv = self.approx_hessian(self.problem.gradient, x)
 
             # Evaluate Hessian (or inverse) approx
-            # G_true = differentiate.hessian(self.problem.objective, x).ddf # TODO Get scipy hess to work with chebyquad
-            G_true = finite_diffs(self.problem.gradient, x, dx=1e-7)
+            G_true = finite_diffs(self.problem.gradient, x, dx=1e-5)
             if is_inv:
-                G_true = np.linalg.inv(G_true)
+                try:
+                    G_true = np.linalg.inv(G_true)
+                except np.linalg.LinAlgError:
+                    G_true = np.nan * np.ones(G_true.shape)
+            self.error_history.append(np.linalg.norm(G - G_true, "fro"))
             
-            # TODO If the Hessian is not symmetric positive definite, this seems to fail...
             if not is_inv:
-                # Solve symmetric linear system
+                # Solve the linear system
                 s = linalg.solve(G, -g)
             else:
                 # Directly compute step direction
                 s = -G @ g
             alpha = self.line_search(x, s)
 
-            self.error_history.append(np.linalg.norm(G - G_true, "fro"))
             x = x + alpha * s
 
         # Return the solution, the and the steps taken, and Hessian errors
@@ -210,14 +210,9 @@ class GoodBroyden(QNewton):
     def approx_hessian(self, g, x):
         # Update hessian approx
         if not self.xp is None and not self.gp is None:
-            v = x - self.xp
+            s = x - self.xp
             y = g(x) - self.gp
-            H = self.H_inv
-
-            denom = np.dot(v, H @ y)
-            if abs(denom) > 1e-12:
-                # Rank 1 update
-                self.H_inv = H + np.outer(v-H@y,v@H) / denom
+            self.H_inv = good_broyden_scott(self.H_inv, s, y)
         else:
             self.H_inv = np.identity(x.shape[0])
 

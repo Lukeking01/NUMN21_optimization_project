@@ -26,4 +26,97 @@ def finite_diffs(g, x, dx=1e-4):
 
     # Symmetrize
     return (G + G.transpose()) / 2
-    
+
+def good_broyden_scott(H, s, y):
+    """
+    :param H: Previous Hess inv approx
+    :param s: Delta between previous location and current location.
+    :param y: Delta between the current grad and the previous grad.
+    """
+    Hy = H@y
+    denom = np.dot(s, Hy)
+    if abs(denom) > 1e-12:
+        # Rank 1 update
+        H = H + np.outer(s-Hy,s@H)/denom
+    return H
+def good_broyden_linn(H, s, y):
+    """Same as Scott's implementation."""
+    Hg = H@y
+    denom = s@Hg
+    if abs(denom) < 1e-12:
+        return H
+    return H + np.outer(s-Hg, s@H)/denom
+def good_broyden_orsolya(H, s, y):
+    """Same as Scott's implementation."""
+    u = s-H@y
+    denom = np.dot(s, H@y)
+    return H+np.outer(u, s@H)/denom
+# def good_broyden_lukas(H, s, y):
+#     if np.dot(s, y) <= 1e-14:
+#         return H
+#     Gs = self.G @ s
+#     self.G = self.G + np.outer(y - Gs, s) / np.dot(s, s)
+
+#     u = y - Gs
+#     v = s / np.dot(s, s)
+#     den = 1.0 + v @ self.H @ u
+#     if abs(den) > 1e-14:
+#         self.H = self.H - np.outer(self.H @ u, v @ self.H) / den
+#     else:
+#         self.H = np.linalg.pinv(self.G)
+
+def bad_broyden_scott(H, s, y):
+    """
+    :param H: Previous Hess inv approx
+    :param s: Delta between previous location and current location.
+    :param y: Delta between the current grad and the previous grad.
+    """
+    pass
+def bad_broyden_linn(H, s, y):
+    pass
+def bad_broyden_orsolya(H, s, y):
+    pass
+def bad_broyden_lukas(H, s, y):
+    pass
+
+def sym_broyden_scott(H, s, y):
+    """
+    :param H: Previous Hess inv approx
+    :param s: Delta between previous location and current location.
+    :param y: Delta between the current grad and the previous grad.
+    """
+    pass
+def sym_broyden_linn(H, s, y):
+    pass
+def sym_broyden_orsolya(H, s, y):
+    pass
+def sym_broyden_lukas(H, s, y):
+    pass
+
+def DFP_scott(H, s, y):
+    """
+    :param H: Previous Hess inv approx
+    :param s: Delta between previous location and current location.
+    :param y: Delta between the current grad and the previous grad.
+    """
+    pass
+def DFP_linn(H, s, y):
+    pass
+def DFP_orsolya(H, s, y):
+    pass
+def DFP_lukas(H, s, y):
+    pass
+
+def BFGS_scott(H, s, y):
+    """
+    :param H: Previous Hess inv approx
+    :param s: Delta between previous location and current location.
+    :param y: Delta between the current grad and the previous grad.
+    """
+    pass
+def BFGS_linn(H, s, y):
+    pass
+def BFGS_orsolya(H, s, y):
+    pass
+def BFGS_lukas(H, s, y):
+    pass
