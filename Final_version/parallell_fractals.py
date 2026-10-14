@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from concurrent.futures import ProcessPoolExecutor
 import optimization as op
-from optimization import ClassicalNewton, BFGS
+from optimization import ClassicalNewton, BFGS, DFP
 
 # ------------------------------------------------------------------
 # Complex Newton as a real 2-D optimization problem
@@ -63,6 +63,18 @@ def run_one_BFGS(xy):
     else:
         return 3, len(solver.step_history)-1   # did not converge
 
+def run_one_DFP(xy):
+    """Run BFGS and return which root it found + iterations"""
+    solver = DFP(problem)
+    sol = solver.solve(np.asarray(xy, dtype=float))
+    
+    # which root
+    dists = np.linalg.norm(roots - sol, axis=1)
+    k = np.argmin(dists)
+    if dists[k] < 0.1:
+        return k, len(solver.step_history)-1
+    else:
+        return 3, len(solver.step_history)-1   # did not converge
 # ------------------------------------------------------------------
 # parallel computation
 # ------------------------------------------------------------------
@@ -97,7 +109,7 @@ def fractal(resolution, run_one, path="imgs/newton_fractal.png"):
 
     # 2. Coloured by iteration count 
     im1 = axes[1].imshow(iters,
-                            origin='lower', cmap='magma', interpolation='nearest')
+                            origin='lower', cmap='magma', interpolation='nearest', vmax=40)
     axes[1].set_title("coloured by iterations")
     axes[1].set_xticks([])
     axes[1].set_yticks([])
@@ -111,7 +123,8 @@ def fractal(resolution, run_one, path="imgs/newton_fractal.png"):
     
 if __name__ == "__main__":
     res = 1800
-    fractal(res, run_one_Newton, path="imgs/newton_fractal.png")
-    fractal(res, run_one_BFGS, path="imgs/BFGS_fractal.png")
+    # fractal(res, run_one_Newton, path=None)#"imgs/newton_fractal.png")
+    # fractal(res, run_one_BFGS, path=None)#"imgs/BFGS_fractal.png")
+    fractal(res, run_one_DFP, path="imgs/DFP_fractal.png")
 
 
