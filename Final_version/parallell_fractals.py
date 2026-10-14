@@ -9,6 +9,7 @@ from optimization import ClassicalNewton, BFGS
 # Minimize |z³ - 1|²  where z = x + i y
 # ------------------------------------------------------------------
 def f(xy):
+    '''function |z³ - 1|², where z = x + i y '''
     x, y = xy
     # z³ - 1 = (x³ - 3xy² - 1) + i(3x²y - y³)
     re = x**3 - 3*x*y**2 - 1
@@ -16,12 +17,11 @@ def f(xy):
     return re**2 + im**2          # |z³ - 1|²
 
 def grad(xy):
-    # analytic gradient of |z³ - 1|²
+    '''analytic gradient of |z³ - 1|²'''
     x, y = xy
     re = x**3 - 3*x*y**2 - 1
     im = 3*x**2*y - y**3
-    # ∂re/∂x = 3x² - 3y²,  ∂re/∂y = -6xy
-    # ∂im/∂x = 6xy,        ∂im/∂y = 3x² - 3y²
+
     dfdx = 2*re*(3*x**2 - 3*y**2) + 2*im*(6*x*y)
     dfdy = 2*re*(-6*x*y)          + 2*im*(3*x**2 - 3*y**2)
     return np.array([dfdx, dfdy])
@@ -35,6 +35,7 @@ roots = np.array([
     [-0.5, -0.86602540378]
 ])
 
+
 def run_one_Newton(xy):
     """Run NewtonMethod and return which root it found + iterations"""
     solver = ClassicalNewton(None,problem)
@@ -43,6 +44,7 @@ def run_one_Newton(xy):
     # which root
     dists = np.linalg.norm(roots - sol, axis=1)
     k = np.argmin(dists)
+
     if dists[k] < 0.1:
         return k, len(solver.step_history)-1
     else:
@@ -67,6 +69,7 @@ def run_one_BFGS(xy):
 
 def fractal(resolution, run_one, path="imgs/newton_fractal.png"):
     num = resolution          # increase to 800–1000 for higher quality
+    
     re = np.linspace(-1.5, 1.5, num)
     im = np.linspace(-1.5, 1.5, num)
     X, Y = np.meshgrid(re, im)
@@ -82,26 +85,33 @@ def fractal(resolution, run_one, path="imgs/newton_fractal.png"):
     # ------------------------------------------------------------------
     # Plot two versions
     # ------------------------------------------------------------------
-    fig, axes = plt.subplots(1, 2, figsize=(14, 6))
+    fig, axes = plt.subplots(1, 2, figsize=(16, 9), dpi=300)
 
     # 1. Coloured by which root
     im0 = axes[0].imshow(colors,
                             origin='lower', interpolation='nearest')
     axes[0].set_title("coloured by root")
-    axes[0].set_xlabel("Re(z)")
-    axes[0].set_ylabel("Im(z)")
+    axes[0].set_xticks([])
+    axes[0].set_yticks([])
+
 
     # 2. Coloured by iteration count 
-    im1 = axes[1].imshow(iters, extent=[-1.5, 1.5, -1.5, 1.5],
+    im1 = axes[1].imshow(iters,
                             origin='lower', cmap='magma', interpolation='nearest')
     axes[1].set_title("coloured by iterations")
-    axes[1].set_xlabel("Re(z)")
-    axes[1].set_ylabel("Im(z)")
-    plt.colorbar(im1, ax=axes[1], label="Iterations")
+    axes[1].set_xticks([])
+    axes[1].set_yticks([])
+
+    #plt.colorbar(im1, ax=axes[1], label="Iterations")
 
     plt.tight_layout()
-    # plt.savefig(path, dpi=200, bbox_inches='tight')
+    if path:
+        plt.savefig(path, dpi=300, pad_inches=0)
     plt.show()
     
 if __name__ == "__main__":
-    fractal(8, run_one_BFGS)
+    res = 1800
+    fractal(res, run_one_Newton, path="imgs/newton_fractal.png")
+    fractal(res, run_one_BFGS, path="imgs/BFGS_fractal.png")
+
+
